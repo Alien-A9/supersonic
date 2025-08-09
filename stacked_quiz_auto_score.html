@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weekly News Digest</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #f3f4f6; 
+            margin: 0;
+            overflow-x: hidden;
+        }
+
+        .toggle-checkbox:checked + .toggle-label { 
+            background-color: #4f46e5; 
+        }
+        .toggle-checkbox:checked + .toggle-label .toggle-ball { 
+            transform: translateX(1.25rem); 
+        }
+
+        /* --- STYLES FOR THE STACKED QUIZ --- */
+        
+        /* Container for the stacked cards */
+        #quiz-container {
+            position: relative;
+            width: 100%;
+            max-width: 640px; /* Increased from 480px to 640px */
+            height: 440px; /* Slightly increased for comfort */
+            margin: 2rem auto 0 auto;
+            overflow: visible;
+        }
+
+        /* Individual question card styling */
+        .question-card {
+            background-color: white;
+            border-radius: 24px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            padding: 2rem 2.5rem; /* Increased horizontal padding */
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.5s ease-in-out;
+            will-change: transform, opacity;
+            cursor: grab;
+            overflow: hidden;
+        }
+        
+        .dismiss-right {
+            transform: translateX(150%) rotate(15deg) !important;
+            opacity: 0 !important;
+        }
+
+        .option-label {
+            display: block;
+            padding: 1rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            margin-bottom: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            font-weight: 500;
+        }
+
+        .option-label:hover {
+            border-color: #4f46e5;
+            background-color: #eef2ff;
+        }
+
+        .option-input {
+            display: none;
+        }
+        
+        .option-input:checked + .option-label {
+             border-color: #4f46e5;
+             background-color: #eef2ff;
+             font-weight: 600;
+        }
+
+        .option-label.correct {
+            border-color: #22c55e !important;
+            background-color: #dcfce7 !important;
+            color: #15803d !important;
+            font-weight: 700;
+        }
+
+        .option-label.incorrect {
+            border-color: #ef4444 !important;
+            background-color: #fee2e2 !important;
+            color: #b91c1c !important;
+            font-weight: 700;
+        }
+        
+        .answered .options-container {
+            pointer-events: none;
+        }
+
+        /* Responsive: allow cards to be full width on small screens */
+        @media (max-width: 700px) {
+            #quiz-container {
+                max-width: 100%;
+                height: auto;
+            }
+            .question-card {
+                padding: 1.25rem 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+
+    <div class="max-w-4xl mx-auto p-4 md:p-8 bg-white shadow-xl rounded-2xl my-8">
+        <!-- Header Section -->
+        <header class="text-center mb-8 border-b-2 border-gray-200 pb-4">
+            <h1 class="text-4xl md:text-5xl font-extrabold text-gray-900 mb-2">Weekly News Digest</h1>
+            <p class="text-lg md:text-xl text-gray-600">Edition: August 4-9, 2025</p>
+        </header>
+
+        <!-- News Article Section -->
+        <section class="mb-12">
+             <h2 class="text-3xl font-bold text-gray-800 mb-6 border-l-4 border-indigo-500 pl-4">Tech & Innovation</h2>
+             <div class="bg-gray-50 p-6 rounded-xl shadow-sm mb-6">
+                 <h3 class="text-2xl font-semibold text-gray-900 mb-3">Global Tech Giants Announce Collaborative AI Ethics Framework</h3>
+                 <img src="https://placehold.co/800x400/e0e7ff/4338ca?text=AI+Ethics+Collaboration" alt="Abstract image representing AI and collaboration" class="w-full h-auto rounded-lg mb-4" onerror="this.onerror=null;this.src='https://placehold.co/800x400/e0e7ff/4338ca?text=Image+Not+Found';">
+                 <p class="text-gray-700 leading-relaxed">In a landmark move, a consortium of the world's leading technology companies, including Google, Apple, and Microsoft, unveiled a unified framework for the ethical development of artificial intelligence. The new guidelines, announced at the World Economic Forum, aim to address growing concerns around AI bias, data privacy, and autonomous decision-making. The framework promotes principles of transparency, accountability, and human-centric design, setting a new global standard for responsible innovation in the rapidly evolving field of AI.</p>
+             </div>
+        </section>
+
+        <hr class="my-10 border-t-4 border-indigo-400 rounded-full shadow-md opacity-80">
+        
+        <!-- Business Quiz Section -->
+        <div class="bg-indigo-50 p-6 rounded-xl shadow-md">
+            <div class="mb-6 flex flex-col items-center">
+                <h3 class="text-3xl font-extrabold text-indigo-800 text-center mb-4">The Business Quiz</h3>
+                <p class="text-indigo-700 text-center w-full mt-2">Test your knowledge of the week's top stories!</p>
+            </div>
+            
+            <!-- The main container where quiz cards will be stacked -->
+            <div id="quiz-container">
+                <!-- Loading indicator -->
+                <div id="loading-indicator" class="flex items-center justify-center h-full">
+                    <p class="text-lg text-gray-500">Loading Quiz...</p>
+                </div>
+            </div>
+        </div>
+        
+        <footer class="text-center mt-12 pt-4 border-t-2 border-gray-200 text-gray-500">
+            <p>&copy; 2025 Weekly News Digest. All rights reserved.</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- DOM Elements ---
+            const quizContainer = document.getElementById('quiz-container');
+            const loadingIndicator = document.getElementById('loading-indicator');
+            // Remove the next button from the DOM if it exists
+            const nextBtn = document.getElementById('next-btn');
+            if (nextBtn) nextBtn.style.display = 'none';
+
+            // --- State Variables ---
+            let quizData = [];
+            let currentQuestionIndex = 0;
+            let score = 0;
+            let answerSelected = false;
+
+            // --- Local Storage Keys ---
+            const LS_KEY = 'quiz_attempt_data_v1';
+
+            /**
+             * Checks if the user has already attempted the quiz within the last 10 minutes.
+             * Returns { attempted: boolean, score: number, timestamp: number }
+             */
+            function getStoredQuizAttempt() {
+                const data = localStorage.getItem(LS_KEY);
+                if (!data) return { attempted: false };
+                try {
+                    const parsed = JSON.parse(data);
+                    if (!parsed.timestamp || typeof parsed.score !== 'number') return { attempted: false };
+                    const now = Date.now();
+                    // 10 minutes = 600000 ms
+                    if (now - parsed.timestamp < 600000) {
+                        return { attempted: true, score: parsed.score, timestamp: parsed.timestamp };
+                    }
+                    // Expired, allow new attempt
+                    return { attempted: false };
+                } catch {
+                    return { attempted: false };
+                }
+            }
+
+            /**
+             * Stores the user's quiz attempt with score and timestamp.
+             */
+            function storeQuizAttempt(score) {
+                localStorage.setItem(LS_KEY, JSON.stringify({
+                    score,
+                    timestamp: Date.now()
+                }));
+            }
+
+            /**
+             * Shows the result card with the stored score.
+             */
+            function showStoredResult(storedScore, totalQuestions) {
+                quizContainer.innerHTML = `
+                    <div class="question-card" style="position:relative;transform:none;opacity:1;z-index:1;">
+                        <div class="flex flex-col items-center justify-center h-full text-center">
+                            <h2 class="text-3xl font-bold text-indigo-800 mb-4">Quiz Complete!</h2>
+                            <p class="text-xl text-gray-700">You scored:</p>
+                            <p class="text-6xl font-extrabold text-indigo-600 my-4">${storedScore} / ${totalQuestions}</p>
+                            <p class="mt-4 text-gray-500 text-base">You can try again after 10 minutes.</p>
+                        </div>
+                    </div>
+                `;
+            }
+
+            /**
+             * Fetches quiz data and initializes the quiz.
+             */
+            async function initializeQuiz() {
+                try {
+                    const response = await fetch('questions.json');
+                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                    quizData = await response.json();
+
+                    // Check if user already attempted
+                    const stored = getStoredQuizAttempt();
+                    if (stored.attempted) {
+                        if (loadingIndicator) loadingIndicator.style.display = 'none';
+                        showStoredResult(stored.score, quizData.length);
+                        return;
+                    }
+
+                    if (loadingIndicator) {
+                        loadingIndicator.style.display = 'none';
+                    }
+
+                    createAllCards();
+                    updateCardStack();
+                    setupCardEventListeners();
+                } catch (error) {
+                    // Fail safe: show error if quiz can't load
+                    if (quizContainer) {
+                        quizContainer.innerHTML = `<p class="text-red-500 text-center font-semibold">Failed to load the quiz. Please try again later.</p>`;
+                    }
+                }
+            }
+
+            /**
+             * Creates all question cards and the result card.
+             */
+            function createAllCards() {
+                quizContainer.innerHTML = '';
+                const quizDataWithResult = [...quizData, { isResultCard: true }];
+
+                quizDataWithResult.forEach((data, index) => {
+                    const card = createQuestionCard(data, index, quizData.length);
+                    quizContainer.appendChild(card);
+                });
+            }
+
+            /**
+             * Creates a single card element (question or result).
+             */
+            function createQuestionCard(data, index, totalQuestions) {
+                const card = document.createElement('div');
+                card.classList.add('question-card');
+                card.dataset.index = index;
+
+                if (data.isResultCard) {
+                    card.innerHTML = `
+                        <div class="flex flex-col items-center justify-center h-full text-center">
+                            <h2 class="text-3xl font-bold text-indigo-800 mb-4">Quiz Complete!</h2>
+                            <p class="text-xl text-gray-700">You scored:</p>
+                            <p class="text-6xl font-extrabold text-indigo-600 my-4" id="final-score">0 / ${totalQuestions}</p>
+                        </div>
+                    `;
+                    // No restart button or event listener
+                } else {
+                    const optionsHtml = data.options.map((option, i) => `
+                        <div>
+                            <input type="radio" class="option-input" name="question-${index}" id="option-${index}-${i}" value="${option}">
+                            <label for="option-${index}-${i}" class="option-label">${option}</label>
+                        </div>
+                    `).join('');
+
+                    card.innerHTML = `
+                        <div class="flex-grow">
+                            <p class="text-lg font-semibold text-indigo-500 mb-2 text-center">Question ${index + 1} of ${totalQuestions}</p>
+                            <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">${data.question}</h2>
+                            <div class="options-container">${optionsHtml}</div>
+                        </div>
+                    `;
+                }
+                return card;
+            }
+
+            /**
+             * Updates the visual stacking (transform, opacity, z-index) of the cards.
+             */
+            function updateCardStack() {
+                const cards = quizContainer.querySelectorAll('.question-card');
+                cards.forEach((card, index) => {
+                    const relativeIndex = index - currentQuestionIndex;
+                    if (relativeIndex >= 0) {
+                        card.style.transform = `scale(${1 - (relativeIndex * 0.05)}) translateY(-${relativeIndex * 15}px)`;
+                        card.style.opacity = `${1 - (relativeIndex * 0.1)}`;
+                        card.style.zIndex = cards.length - index;
+                        card.classList.remove('dismiss-right');
+                    }
+                });
+            }
+
+            /**
+             * Sets up event listeners for the current top card's options.
+             */
+            function setupCardEventListeners() {
+                const currentCard = getCurrentCard();
+                if (!currentCard || currentQuestionIndex >= quizData.length) return;
+
+                const optionsContainer = currentCard.querySelector('.options-container');
+                optionsContainer.addEventListener('change', handleOptionSelect);
+            }
+
+            /**
+             * Handles the selection of an answer option.
+             */
+            function handleOptionSelect(e) {
+                if (answerSelected || e.target.name !== `question-${currentQuestionIndex}`) return;
+
+                answerSelected = true;
+                const selectedInput = e.target;
+                const selectedLabel = selectedInput.nextElementSibling;
+
+                // Extract the selected option's letter (e.g., "A", "B", "C")
+                const selectedOptionLetter = selectedInput.value.split(')')[0].trim();
+                const correctLetter = quizData[currentQuestionIndex].answer;
+
+                const isCorrect = selectedOptionLetter === correctLetter;
+
+                handleAnswerFeedback(isCorrect, selectedLabel, correctLetter);
+
+                // Always auto-next after answer
+                setTimeout(nextQuestion, 1200);
+            }
+
+            /**
+             * Provides visual feedback for the selected answer.
+             */
+            function handleAnswerFeedback(isCorrect, selectedLabel, correctLetter) {
+                const currentCard = getCurrentCard();
+                currentCard.classList.add('answered');
+
+                if (isCorrect) {
+                    score++;
+                    selectedLabel.classList.add('correct');
+                } else {
+                    selectedLabel.classList.add('incorrect');
+                }
+
+                // Highlight the correct option
+                const optionInputs = currentCard.querySelectorAll('.option-input');
+                optionInputs.forEach(input => {
+                    const optionLetter = input.value.split(')')[0].trim();
+                    if (optionLetter === correctLetter) {
+                        input.nextElementSibling.classList.add('correct');
+                    }
+                });
+            }
+
+            /**
+             * Moves to the next question by dismissing the current card.
+             */
+            function nextQuestion() {
+                if (currentQuestionIndex >= quizData.length) return;
+
+                const card = getCurrentCard();
+                if (!card) return;
+
+                card.classList.add('dismiss-right');
+
+                currentQuestionIndex++;
+                answerSelected = false;
+
+                setTimeout(() => {
+                    updateCardStack();
+                    setupCardEventListeners();
+
+                    if (currentQuestionIndex === quizData.length) {
+                        document.getElementById('final-score').innerText = `${score} / ${quizData.length}`;
+                        // Store the attempt in localStorage
+                        storeQuizAttempt(score);
+                    }
+                }, 100);
+            }
+
+            /**
+             * Gets the currently active (top) question card.
+             */
+            function getCurrentCard() {
+                return quizContainer.querySelector(`[data-index="${currentQuestionIndex}"]`);
+            }
+
+            // --- Initial Load ---
+            initializeQuiz();
+        });
+    </script>
+</body>
+</html>

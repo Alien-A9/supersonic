@@ -1,0 +1,20 @@
+[
+  {
+    "question": "Which country is now the largest importer of Russian oil after China?",
+    "options": [
+      "A) United States",
+      "B) Germany",
+      "C) India"
+    ],
+    "answer": "C"
+  },
+  {
+    "question": "The US has imposed a new tariff of what percentage on Indian goods?",
+    "options": [
+      "A) 25%",
+      "B) 50%",
+      "C) 75%"
+    ],
+    "answer": "B"
+  }
+]
